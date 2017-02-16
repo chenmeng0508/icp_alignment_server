@@ -5,13 +5,25 @@ project(icp_alignment_server)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  actionlib
+  actionlib_msgs
   roscpp
   rospy
   std_msgs
+  sensor_msgs
+  geometry_msgs
+  pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
+
+
+#add dynamic reconfigure api
+#find_package(catkin REQUIRED dynamic_reconfigure)
+
+
+# make sure configure headers are built before any node using them
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -58,17 +70,16 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
+add_action_files(
+  DIRECTORY action
+  FILES PointcloudAlignment.action
+)
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES actionlib_msgs std_msgs sensor_msgs geometry_msgs 
+)
+
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -100,10 +111,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES icp_alignment_server
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+  CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs pcl_ros
 )
 
 ###########
@@ -114,7 +122,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -128,13 +138,31 @@ include_directories(
 # add_dependencies(icp_alignment_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(icp_alignment_server_node src/icp_alignment_server_node.cpp)
+add_executable(pointcloud_alignment_server src/pointcloud_alignment_server.cpp)
+
+
+
+## Compiler flags
+set(CMAKE_CXX_FLAGS "-O3")    
+
+FIND_PACKAGE( OpenMP REQUIRED)
+if(OPENMP_FOUND)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(icp_alignment_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(pointcloud_alignment_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(pointcloud_alignment_server ${PROJECT_NAME}_gencfg)
+
+
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(pointcloud_alignment_server ${catkin_LIBRARIES})
+
 # target_link_libraries(icp_alignment_server_node
 #   ${catkin_LIBRARIES}
 # )
