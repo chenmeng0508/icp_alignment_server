@@ -14,4 +14,4 @@ max_icp_evaluations: 4000
 max_depth: 2
 lambda: 1
 mu: 1
-number_rotation_samples = 8;
+number_rotation_samples: 8

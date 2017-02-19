@@ -179,9 +179,10 @@ public:
                 local_pointcloud_alignment(source_subclouds, target_subcloud, R_i, t_i);
 
                 float percentage = calc_overlapping_percentage(source_subclouds[0], target_subcloud, R_i, t_i);
+
                 float ppe = per_point_error(source_subclouds[0], target_subcloud , R_i, t_i);
                 VectorXf axis_i = getAxisOfRotation(R_i);
-                float rotation_error = min((validRotationAxis-axis_i).norm(), (validRotationAxis+axis_i).norm()); // TODO: auch invertieren?
+                float rotation_error = min((validRotationAxis-axis_i).norm(), (validRotationAxis+axis_i).norm());
 
                 float quality = eval_quality(percentage, ppe, rotation_error);
 
@@ -698,9 +699,9 @@ public:
 
         float theta = acos(((R(0,0)+R(1,1)+R(2,2))-1.0f)/2.0f);
 
-        axis(0) = (R(3,2)-R(2,3))/(2.0f*sin(theta));
-        axis(1) = (R(1,3)-R(3,1))/(2.0f*sin(theta));
-        axis(2) = (R(2,1)-R(1,2))/(2.0f*sin(theta));
+        axis(0) = (R(2,1)-R(1,2))/(2.0f*sin(theta));
+        axis(1) = (R(0,2)-R(2,0))/(2.0f*sin(theta));
+        axis(2) = (R(1,0)-R(0,1))/(2.0f*sin(theta));
 
         return axis;
     }
@@ -764,7 +765,7 @@ public:
         PriorityQueue *Q = createQueue();
 
         VectorXf t0_init(3), half_edge_length(3);
-        t0_init<<0,0,0; // TODO:
+        t0_init<<0,0,0;
         half_edge_length << 0,0,0;
 
         for (int i = 0; i < pointmap.cols(); i++) {
@@ -828,6 +829,7 @@ public:
 
     // fills given priority queue with all cubes of the current depth
     void fillPriorityQueue(PriorityQueue *Q, Cube *cube, int curDepth, int MAX_DEPTH) {
+        insert(Q, cube);
 
         if (curDepth < MAX_DEPTH) {
             Cube **subcubes = splitCube(cube);
