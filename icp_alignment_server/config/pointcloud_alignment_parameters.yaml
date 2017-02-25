@@ -7,11 +7,11 @@ icp_eps2: 1.0e-03
 max_icp_it: 300
 max_numerical_error: 1.0e-04
 max_percentage: 0.85
+lambda: 1
 
 size_source: 300
 size_target: 4000
-max_icp_evaluations: 4000
-max_depth: 2
-lambda: 1
+max_icp_evaluations: 1000
+max_depth: 3
 mu: 1
 number_rotation_samples: 8

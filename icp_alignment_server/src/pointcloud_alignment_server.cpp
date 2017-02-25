@@ -138,8 +138,6 @@ public:
         int queueLength;
         Cube **Q = initPriorityQueue(queueLength, target_pointcloud);
 
-        MatrixXf R_init = copyMatrix(R);
-
         int itCt = 0;
         float cur_err = FLT_MAX;
         float cur_percentage = FLT_MIN;
@@ -160,12 +158,14 @@ public:
             r(2) = (r(2)/r.norm())*angle;
 
             rotation_samples[i] = getAARot(r);
+            //cout<<"angle: "<<angle/M_PI<<endl;
+            //cout<<"axis: "<<getAxisOfRotation(getAARot(r))<<endl;
         }
 
 
         // process priority queue
         int i = 0;
-        #pragma omp parallel for shared(cur_err, R, i, cur_percentage, itCt, best_quality)
+        #pragma omp parallel for shared(cur_err, R, t, i, cur_percentage, itCt, best_quality)
         for (i = 0; i < queueLength; i++) {
 
             if (i >= MAX_ICP_EVALUATIONS) {
@@ -175,6 +175,8 @@ public:
             for (int j = 0; j < NUMBER_ROTATION_SAMPLES; j++) {
                 MatrixXf R_i = copyMatrix(rotation_samples[j]);
                 VectorXf t_i = copyVector(Q[i]->t0);
+
+                //cout<<"t: "<<j<<" "<<t_i(0)<<" "<<t_i(1)<<" "<<t_i(2)<<endl;
 
                 local_pointcloud_alignment(source_subclouds, target_subcloud, R_i, t_i);
 
@@ -719,7 +721,9 @@ public:
             for (int j = 0; j < 2; j++) {
                 for (int k = 0; k < 2; k++) {
                     offset << cube->half_edge_length(0)/2.0f*signs[i],cube->half_edge_length(1)/2.0f*signs[j],cube->half_edge_length(2)/2.0f*signs[k];
-                    VectorXf hel = copyVector(cube->half_edge_length / 2.0f);
+                    //VectorXf hel = copyVector(cube->half_edge_length / 2.0f);
+                    VectorXf hel(3);
+                    hel << cube->half_edge_length(0)/2.0f, cube->half_edge_length(1)/2.0f, cube->half_edge_length(2)/2.0f;
                     subcubes[position++] = createCube(cube->t0 + offset, hel, cube->depth + 1);
 
                 }
